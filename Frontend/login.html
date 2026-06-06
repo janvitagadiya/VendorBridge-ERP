@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendorBridge - Gateway Secure Authorization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="glass-card p-10 rounded-3xl w-full max-w-md border border-white/10 shadow-2xl">
+        <h1 class="text-3xl font-black mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider">VENDORBRIDGE</h1>
+        <p class="text-slate-400 text-sm text-center mb-8">Procurement & ERP Ledger Node Architecture</p>
+
+        <div class="flex border-b border-white/10 mb-6">
+            <button onclick="toggleTab('login')" id="tab-login" class="flex-1 py-3 text-center text-sm font-bold border-b-2 border-blue-500 text-white">Login</button>
+            <button onclick="toggleTab('signup')" id="tab-signup" class="flex-1 py-3 text-center text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white">Sign Up</button>
+        </div>
+
+        <form id="loginForm" onsubmit="executeLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Corporate Email Address</label>
+                <input type="email" id="login-email" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" placeholder="user@vendorbridge.com" required>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Security Account Password</label>
+                <input type="password" id="login-pass" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" placeholder="••••••••" required>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">System Clearance Role</label>
+                <select id="login-role" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
+                    <option value="officer">Procurement Officer</option>
+                    <option value="manager">Approver Manager</option>
+                    <option value="vendor">Verified Partner Vendor</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold tracking-wide transition mt-6 text-sm">Authorize Session</button>
+        </form>
+
+        <form id="signupForm" onsubmit="executeSignup(event)" class="space-y-4 hidden">
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Full Identity Name</label>
+                <input type="text" id="sign-name" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500" placeholder="Alex Rivera" required>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Account Communication Email</label>
+                <input type="email" id="sign-email" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500" placeholder="alex@company.com" required>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Create Passkey Security Code</label>
+                <input type="password" id="sign-pass" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500" placeholder="••••••••" required>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Select Functional Role Registry</label>
+                <select id="sign-role" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500">
+                    <option value="officer">Procurement Officer</option>
+                    <option value="manager">Approver Manager</option>
+                    <option value="vendor">Verified Partner Vendor</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold tracking-wide transition mt-6 text-sm">Provision System Account</button>
+        </form>
+    </div>
+
+    <script>
+        function toggleTab(mode) {
+            let logTab = document.getElementById('tab-login');
+            let signTab = document.getElementById('tab-signup');
+            let logForm = document.getElementById('loginForm');
+            let signForm = document.getElementById('signupForm');
+
+            if(mode === 'login') {
+                logTab.className = "flex-1 py-3 text-center text-sm font-bold border-b-2 border-blue-500 text-white";
+                signTab.className = "flex-1 py-3 text-center text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white";
+                logForm.classList.remove('hidden');
+                signForm.classList.add('hidden');
+            } else {
+                signTab.className = "flex-1 py-3 text-center text-sm font-bold border-b-2 border-purple-500 text-white";
+                logTab.className = "flex-1 py-3 text-center text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white";
+                signForm.classList.remove('hidden');
+                logForm.classList.add('hidden');
+            }
+        }
+
+        function executeLogin(e) {
+            e.preventDefault();
+            let payload = {
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-pass').value,
+                role: document.getElementById('login-role').value
+            };
+
+            fetch('login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(out => {
+                if(out.status === 'success') {
+                    alert("Authentication clear. Entering main dashboard area...");
+                    window.location.href = 'index.html';
+                } else { alert("Exception: " + out.message); }
+            });
+        }
+
+        function executeSignup(e) {
+            e.preventDefault();
+            let payload = {
+                name: document.getElementById('sign-name').value,
+                email: document.getElementById('sign-email').value,
+                password: document.getElementById('sign-pass').value,
+                role: document.getElementById('sign-role').value
+            };
+
+            fetch('signup.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(out => {
+                if(out.status === 'success') {
+                    alert("Account provisioned. Please sign in now.");
+                    toggleTab('login');
+                    document.getElementById('login-email').value = payload.email;
+                } else { alert("Exception: " + out.message); }
+            });
+        }
+    </script>
+</body>
+</html>

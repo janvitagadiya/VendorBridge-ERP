@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendorBridge - Invoices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="w-64 min-h-screen p-6 border-r border-white/10 flex flex-col justify-between fixed left-0 top-0 h-full bg-[#050505]">
+        <div>
+            <h1 class="text-2xl font-black mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wide">VENDORBRIDGE</h1>
+            <nav class="space-y-2">
+                <a href="index.html" class="block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Dashboard</a>
+                <a href="vendors.html" class="block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Vendors Matrix</a>
+                <a href="invoices.html" class="block py-3 px-4 rounded-xl font-bold bg-purple-600/20 text-purple-400 border border-purple-500/50 transition">Invoice Ledger</a>
+            </nav>
+        </div>
+        <a href="login.html" class="block py-3 px-4 rounded-xl text-red-400 hover:bg-red-900/20 border border-red-900/50 transition text-center text-sm font-bold">Logout</a>
+    </aside>
+
+    <div class="flex-1 pl-64 w-full p-10">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <p class="text-purple-500 text-sm font-bold uppercase tracking-widest">Financials</p>
+                <h2 class="text-3xl font-bold text-white">Invoice Management</h2>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="glass-card p-6 rounded-3xl h-fit">
+                <h3 class="text-xl font-bold mb-4 text-purple-400">Generate New Invoice</h3>
+                <form onsubmit="createInvoice(event)" id="invoiceForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Select Active Purchase Order</label>
+                        <select id="inv_po_id" onchange="autoPopulateDetails()" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500">
+                            </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Target Vendor (Auto-Loaded)</label>
+                        <input type="text" id="inv_vendor_name" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-slate-400 focus:outline-none" readonly>
+                        <input type="hidden" id="inv_vendor_id">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Total Amount Due (₹)</label>
+                        <input type="number" id="inv_amount" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-slate-400 focus:outline-none" readonly>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-500 transition rounded-xl text-sm font-bold tracking-wide">Commit Invoice Row</button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden p-6">
+                <h3 class="text-xl font-bold mb-4 text-white">Generated Invoices Ledger</h3>
+                <table class="w-full text-left">
+                    <thead class="border-b border-white/10">
+                        <tr class="text-slate-400 text-xs uppercase tracking-widest">
+                            <th class="pb-4">Invoice No</th>
+                            <th class="pb-4">PO Ref</th>
+                            <th class="pb-4">Vendor Partner</th>
+                            <th class="pb-4">Amount</th>
+                            <th class="pb-4">Due Date</th>
+                            <th class="pb-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-table-body" class="text-slate-200 divide-y divide-white/5"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let poCacheLocalList = [];
+
+        function initInvoicePage() {
+            // 1. Load your existing generated invoices ledger
+            loadInvoices();
+
+            // 2. Fetch the active PO dropdown options from get_pos.php
+            fetch('get_pos.php')
+            .then(res => res.json())
+            .then(data => {
+                poCacheLocalList = Array.isArray(data) ? data : (data.data || []);
+                let select = document.getElementById('inv_po_id');
+                if(!select) return;
+
+                if (poCacheLocalList.length === 0) {
+                    select.innerHTML = `<option value="">No Active POs Found</option>`;
+                    return;
+                }
+
+                select.innerHTML = poCacheLocalList.map(p => `<option value="${p.id}">${p.po_no} (${p.company_name})</option>`).join('');
+                autoPopulateDetails(); // Run initial form mapping update
+            }).catch(e => console.log("PO reference loading paused or file not created yet"));
+        }
+
+        function autoPopulateDetails() {
+            let selectedPoId = document.getElementById('inv_po_id').value;
+            let currentPo = poCacheLocalList.find(p => p.id == selectedPoId);
+            
+            if (currentPo) {
+                document.getElementById('inv_vendor_name').value = currentPo.company_name;
+                document.getElementById('inv_vendor_id').value = currentPo.vendor_id;
+                document.getElementById('inv_amount').value = currentPo.total_amount;
+            }
+        }
+
+        function loadInvoices() {
+            fetch('save_invoice.php')
+            .then(res => res.json())
+            .then(data => {
+                let tbody = document.getElementById('invoice-table-body');
+                if (!tbody) return;
+                
+                let list = Array.isArray(data) ? data : (data.data || []);
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No invoices generated yet.</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = list.map(inv => `
+                    <tr>
+                        <td class="py-4 font-bold text-purple-400">${inv.invoice_no}</td>
+                        <td class="py-4 font-mono text-xs text-slate-400">${inv.po_no}</td>
+                        <td class="py-4 text-slate-300">${inv.company_name}</td>
+                        <td class="py-4 text-emerald-400 font-semibold">₹${inv.total_amount}</td>
+                        <td class="py-4 text-slate-400 text-sm">${inv.due_date}</td>
+                        <td class="py-4"><span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs border border-blue-500/20 font-bold uppercase">${inv.status}</span></td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function createInvoice(e) {
+            e.preventDefault();
+            fetch('save_invoice.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    purchase_order_id: document.getElementById('inv_po_id').value,
+                    vendor_id: document.getElementById('inv_vendor_id').value,
+                    total_amount: document.getElementById('inv_amount').value
+                })
+            })
+            .then(res => res.json())
+            .then(out => {
+                alert(out.message);
+                loadInvoices();
+            }).catch(err => alert("Error writing entry to relational schema ledger."));
+        }
+
+        window.onload = initInvoicePage;
+    </script>
+</body>
+</html>

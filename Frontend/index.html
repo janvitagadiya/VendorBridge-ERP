@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendorBridge - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="w-64 min-h-screen p-6 border-r border-white/10 flex flex-col justify-between fixed left-0 top-0 h-full bg-[#050505]">
+        <div>
+            <h1 class="text-2xl font-black mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wide">VENDORBRIDGE</h1>
+            <nav class="space-y-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full text-left py-3 px-4 rounded-xl font-bold bg-blue-600/20 text-blue-400 border border-blue-500/50 transition">Dashboard</button>
+                <a href="vendors.html" class="block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Vendors Matrix</a>
+                <button onclick="switchTab('quotations')" id="nav-quotations" class="w-full text-left py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Submit Quotation</button>
+                <button onclick="switchTab('approvals')" id="nav-approvals" class="w-full text-left py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Manager Approvals</button>
+                <a href="invoices.html" class="block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Invoice Ledger</a>
+            </nav>
+        </div>
+        <a href="login.html" class="block py-3 px-4 rounded-xl text-red-400 hover:bg-red-900/20 border border-red-900/50 transition text-center text-sm font-bold">Logout</a>
+    </aside>
+
+    <div class="flex-1 pl-64 w-full">
+        
+        <main id="tab-sec-dashboard" class="p-10 container-tab">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <p class="text-blue-500 text-sm font-bold uppercase tracking-widest">Overview</p>
+                    <h2 class="text-3xl font-bold text-white">Procurement Dashboard</h2>
+                </div>
+                <button onclick="document.getElementById('rfq-modal').classList.remove('hidden')" class="bg-white text-black px-6 py-3 rounded-full font-bold hover:bg-blue-400 transition text-sm">
+                    + Create New RFQ
+                </button>
+            </header>
+
+            <div class="glass-card p-8 rounded-3xl mb-10 w-64 border-l-4 border-blue-500">
+                <p class="text-slate-400 text-sm font-medium">Total Active RFQs</p>
+                <h3 class="text-5xl font-black mt-2 text-white" id="val-rfq">0</h3>
+            </div>
+
+            <div class="glass-card rounded-3xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="border-b border-white/10">
+                        <tr class="text-slate-400 text-xs uppercase tracking-widest">
+                            <th class="p-6">RFQ No</th>
+                            <th class="p-6">Title / Requirement</th>
+                            <th class="p-6">Deadline</th>
+                            <th class="p-6">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rfq-table-body" class="text-slate-200"></tbody>
+                </table>
+            </div>
+        </main>
+
+        <main id="tab-sec-quotations" class="p-10 container-tab hidden">
+            <header class="mb-10">
+                <p class="text-emerald-500 text-sm font-bold uppercase tracking-widest">Bidding Panel</p>
+                <h2 class="text-3xl font-bold text-white">Submit Commercial Proposal</h2>
+            </header>
+            <div class="glass-card p-8 rounded-3xl max-w-xl">
+                <form onsubmit="saveQuotation(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Select RFQ</label>
+                        <select id="q-rfq-id" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Select Vendor</label>
+                        <select id="q-vendor-id" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Total Price (₹)</label>
+                            <input type="number" id="q-amount" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Timeline</label>
+                            <input type="text" id="q-timeline" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 transition rounded-xl text-sm font-bold mt-4">File Commercial Proposal</button>
+                </form>
+            </div>
+        </main>
+
+        <main id="tab-sec-approvals" class="p-10 container-tab hidden">
+            <header class="mb-10">
+                <p class="text-purple-500 text-sm font-bold uppercase tracking-widest">Executive Reviews</p>
+                <h2 class="text-3xl font-bold text-white">Compare Quotations & Signoff</h2>
+            </header>
+            <div class="glass-card rounded-3xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="border-b border-white/10">
+                        <tr class="text-slate-400 text-xs uppercase tracking-widest">
+                            <th class="p-6">Quote ID No</th>
+                            <th class="p-6">Company Partner</th>
+                            <th class="p-6">Total Value</th>
+                            <th class="p-6">Timeline</th>
+                            <th class="p-6">Status</th>
+                            <th class="p-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approval-table-body" class="text-slate-200"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="rfq-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="glass-card p-8 rounded-3xl w-full max-w-md">
+            <h3 class="text-xl font-bold mb-6 text-white">Create New RFQ</h3>
+            <form onsubmit="saveRFQ(event)" id="rfqForm">
+                <div class="mb-4">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-2">RFQ Serial Number</label>
+                    <input type="text" id="rfq_no" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-2">RFQ Title</label>
+                    <input type="text" id="rfq_title" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs uppercase text-slate-400 font-bold mb-2">Deadline</label>
+                    <input type="date" id="rfq_deadline" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none" required>
+                </div>
+                <div class="flex gap-4 justify-end">
+                    <button type="button" onclick="document.getElementById('rfq-modal').classList.add('hidden')" class="px-5 py-2 rounded-xl text-sm font-semibold border border-white/10 text-slate-300">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-500 transition">Save RFQ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(target) {
+            document.querySelectorAll('.container-tab').forEach(el => el.classList.add('hidden'));
+            const activeTab = document.getElementById('tab-sec-' + target);
+            if (activeTab) activeTab.classList.remove('hidden');
+            
+            ['dashboard', 'quotations', 'approvals'].forEach(t => {
+                let btn = document.getElementById('nav-' + t);
+                if (btn) {
+                    if (t === target) {
+                        btn.className = "w-full text-left py-3 px-4 rounded-xl font-bold bg-blue-600/20 text-blue-400 border border-blue-500/50 transition";
+                    } else {
+                        btn.className = "w-full text-left py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold";
+                    }
+                }
+            });
+
+            if (target === 'dashboard') loadRFQs();
+            if (target === 'quotations') loadDropdownData();
+            if (target === 'approvals') loadQuotations();
+        }
+
+        function loadRFQs() {
+            fetch('get_rfqs.php')
+            .then(res => res.json())
+            .then(data => {
+                let tbody = document.getElementById('rfq-table-body');
+                let counter = document.getElementById('val-rfq');
+                
+                // Read straight raw array list directly
+                if (counter) counter.innerText = data.length;
+                
+                if (tbody) {
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500">No active RFQs.</td></tr>`;
+                        return;
+                    }
+                    tbody.innerHTML = data.map(item => `
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                            <td class="p-6 font-bold text-white">${item.rfq_no}</td>
+                            <td class="p-6 text-slate-300">${item.title}</td>
+                            <td class="p-6 text-slate-400">${item.deadline}</td>
+                            <td class="p-6"><span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-300 text-xs border border-blue-500/20 font-semibold uppercase">${item.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            }).catch(err => console.error("Error reading data:", err));
+        }
+
+        function saveRFQ(e) {
+            e.preventDefault();
+            fetch('create_rfq.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rfq_no: document.getElementById('rfq_no').value,
+                    title: document.getElementById('rfq_title').value,
+                    deadline: document.getElementById('rfq_deadline').value
+                })
+            }).then(res => res.json()).then(out => {
+                document.getElementById('rfq-modal').classList.add('hidden');
+                document.getElementById('rfqForm').reset();
+                loadRFQs();
+            });
+        }
+
+        function loadDropdownData() {
+            fetch('get_rfqs.php').then(res => res.json()).then(data => {
+                document.getElementById('q-rfq-id').innerHTML = data.map(r => `<option value="${r.id}">${r.rfq_no} - ${r.title}</option>`).join('');
+            });
+            fetch('get_vendor.php').then(res => res.json()).then(data => {
+                document.getElementById('q-vendor-id').innerHTML = data.map(v => `<option value="${v.id}">${v.company_name}</option>`).join('');
+            });
+        }
+
+        function saveQuotation(e) {
+            e.preventDefault();
+            fetch('submit_quotation.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rfq_id: document.getElementById('q-rfq-id').value,
+                    vendor_id: document.getElementById('q-vendor-id').value,
+                    grand_total: document.getElementById('q-amount').value,
+                    delivery_timeline: document.getElementById('q-timeline').value
+                })
+            }).then(res => res.json()).then(out => {
+                alert(out.message);
+                switchTab('dashboard');
+            });
+        }
+
+        function loadQuotations() {
+            fetch('get_quotations.php')
+            .then(res => res.json())
+            .then(data => {
+                let tbody = document.getElementById('approval-table-body');
+                if (!tbody) return;
+                if(data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No proposals pending.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(q => `
+                    <tr class="border-b border-white/5">
+                        <td class="p-6 font-mono text-purple-400">${q.quotation_no}</td>
+                        <td class="p-6 font-bold">${q.company_name}</td>
+                        <td class="p-6 text-emerald-400 font-bold">₹${q.grand_total}</td>
+                        <td class="p-6 text-slate-400">${q.delivery_timeline}</td>
+                        <td class="p-6"><span class="text-xs uppercase px-2 py-1 rounded bg-white/5">${q.status}</span></td>
+                        <td class="p-6 text-right space-x-2">
+                            <button onclick="processApproval(${q.id}, 'approve')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-white transition">Approve</button>
+                            <button onclick="processApproval(${q.id}, 'reject')" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">Reject</button>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function processApproval(id, act) {
+            fetch('approve_rfq.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quotation_id: id, action: act })
+            }).then(res => res.json()).then(out => {
+                alert(out.message);
+                loadQuotations();
+            });
+        }
+
+        window.onload = function() {
+            loadRFQs();
+        };
+    </script>
+</body>
+</html>
