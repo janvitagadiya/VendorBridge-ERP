@@ -55,7 +55,7 @@ Vendor Management → RFQ Creation → Quotation Submission → Quotation Compar
 * Dashboard
 * <img width="960" height="448" alt="2026-06-16 (2)" src="https://github.com/user-attachments/assets/34568355-dc94-4d6b-9764-47d4bd7536c9" />
 * Vendor Management
-* <img width="960" height="441" alt="2026-06-16 (4)" src="https://github.com/user-attachments/assets/b0516253-c567-4383-8e02-714a890ed4ef" />
+*<img width="960" height="448" alt="2026-06-16 (5)" src="https://github.com/user-attachments/assets/e0eced8a-6cc8-4ee3-81db-06fecb36d268" />
 * RFQ Creation
 * <img width="960" height="451" alt="2026-06-16 (1)" src="https://github.com/user-attachments/assets/05734ec0-277d-4d1c-bfc6-a6306e85fa68" />
 * Quotation Comparison
