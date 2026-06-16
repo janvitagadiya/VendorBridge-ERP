@@ -53,11 +53,11 @@ Vendor Management → RFQ Creation → Quotation Submission → Quotation Compar
 ## 📸 Screenshots
 
 * Dashboard
-* <img width="960" height="448" alt="2026-06-16 (2)" src="https://github.com/user-attachments/assets/34568355-dc94-4d6b-9764-47d4bd7536c9" />
+*<img width="960" height="451" alt="2026-06-16 (1)" src="https://github.com/user-attachments/assets/51760cdf-fcea-4c33-8e3c-400bc499a317" />
 * Vendor Management
 *<img width="960" height="448" alt="2026-06-16 (5)" src="https://github.com/user-attachments/assets/e0eced8a-6cc8-4ee3-81db-06fecb36d268" />
 * RFQ Creation
-* <img width="960" height="451" alt="2026-06-16 (1)" src="https://github.com/user-attachments/assets/05734ec0-277d-4d1c-bfc6-a6306e85fa68" />
+*<img width="960" height="448" alt="2026-06-16 (2)" src="https://github.com/user-attachments/assets/83b70503-e9e3-469a-abb3-09964703dc02" />
 * Quotation Comparison
 * <img width="960" height="439" alt="2026-06-16 (3)" src="https://github.com/user-attachments/assets/45f8b6b8-2e15-4a66-b763-447969fbd2ef" />
 * Manager Approvals
