@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendorBridge - Create New RFQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="w-64 min-h-screen p-6 border-r border-white/10 flex flex-col justify-between fixed left-0 top-0 h-full bg-[#050505]">
+        <div>
+            <h1 class="text-2xl font-black mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wide">VENDORBRIDGE</h1>
+          <nav class="space-y-2">
+    <a href="index.html" id="nav-dashboard" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Dashboard</a>
+    <a href="vendors.html" id="nav-vendors" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Vendors Matrix</a>
+    
+    <div class="mt-6">
+        <p class="px-4 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">RFQ's</p>
+        <a href="create_rfq.html" id="nav-create" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Create New</a>
+       
+    </div>
+
+    <a href="submit_quotation.html" id="nav-submit" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Submit Quotation</a>
+    <a href="../backend/comparison.php"
+   id="nav-comparison"
+   class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">
+   Compare Quotations
+</a>
+    <a href="../backend/approvals.php" id="nav-approvals" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Manager Approvals</a>
+    <a href="../backend/purchase_orders.php"
+   id="nav-po"
+   class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">
+   Purchase Orders
+</a>
+    <a href="invoices.html" id="nav-invoices" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Invoice Ledger</a>
+</nav>
+        </div>
+        <a href="login.html" class="block py-3 px-4 rounded-xl text-red-400 hover:bg-red-900/20 border border-red-900/50 transition text-center text-sm font-bold">Logout</a>
+    </aside>
+
+
+    <main class="flex-1 pl-64 p-10">
+        <div class="max-w-4xl mx-auto glass-card p-10 rounded-3xl">
+            <h1 class="text-3xl font-black mb-6">Create New RFQ</h1>
+            
+            <div id="step-1" class="space-y-4">
+                <input type="text" id="rfq_no" placeholder="RFQ Number" class="w-full bg-black border border-white/10 p-4 rounded-xl">
+                <input type="text" id="rfq_title" placeholder="RFQ Title" class="w-full bg-black border border-white/10 p-4 rounded-xl">
+                <input type="date" id="rfq_deadline" class="w-full bg-black border border-white/10 p-4 rounded-xl">
+                <textarea id="rfq_notes" placeholder="Description" class="w-full bg-black border border-white/10 p-4 rounded-xl h-24"></textarea>
+                <button onclick="nextStep(2)" class="bg-blue-600 px-8 py-3 rounded-full font-bold hover:bg-blue-500 transition">Next</button>
+            </div>
+
+            <div id="step-2" class="hidden space-y-6">
+                <div class="p-6 border border-white/10 rounded-2xl">
+                    <h3 class="font-bold mb-4">Line Items</h3>
+                    <div id="items-container" class="space-y-3 mb-4"></div>
+                    <button onclick="addItem()" class="text-blue-400 text-sm font-bold">+ Add Line Item</button>
+                </div>
+                <div class="p-6 border border-white/10 rounded-2xl">
+                    <h3 class="font-bold mb-4">Assign Vendors (IDs)</h3>
+                    <input type="text" id="vendor_list" placeholder="e.g. 1, 2, 3" class="w-full bg-black border border-white/10 p-4 rounded-xl">
+                </div>
+                <button onclick="saveRFQ()" class="bg-blue-600 px-8 py-3 rounded-full font-bold hover:bg-blue-500 transition">Save & Send to Vendors</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Navigation Highlight Logic ---
+        const path = window.location.pathname.split("/").pop();
+        const navMap = { 'index.html': 'nav-dashboard', 'vendors.html': 'nav-vendors', 'create_rfq.html': 'nav-create', 'rfq_list.html': 'nav-list', 'submit_quotation.html': 'nav-submit', 'approvals.html': 'nav-approvals', 'invoices.html': 'nav-invoices' };
+        if (navMap[path]) {
+            const activeEl = document.getElementById(navMap[path]);
+            activeEl.classList.add('bg-blue-600/20', 'text-blue-400', 'border', 'border-blue-500/50');
+            activeEl.classList.remove('text-slate-400');
+        }
+
+        // --- Form Logic ---
+        function nextStep(step) {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+        }
+
+        function addItem() {
+            const container = document.getElementById('items-container');
+            const div = document.createElement('div');
+            div.className = "flex gap-2";
+            div.innerHTML = `<input type="text" placeholder="Item Name" class="item-name flex-1 bg-black border border-white/10 p-2 rounded">
+                             <input type="number" placeholder="Qty" class="item-qty w-20 bg-black border border-white/10 p-2 rounded">
+                             <input type="text" placeholder="Unit" class="item-unit w-20 bg-black border border-white/10 p-2 rounded">`;
+            container.appendChild(div);
+        }
+
+        function saveRFQ() {
+            const items = Array.from(document.querySelectorAll('#items-container > div')).map(el => ({
+                item_name: el.querySelector('.item-name').value,
+                quantity: el.querySelector('.item-qty').value,
+                unit: el.querySelector('.item-unit').value
+            }));
+
+            const payload = {
+                rfq_no: document.getElementById('rfq_no').value,
+                title: document.getElementById('rfq_title').value,
+                deadline: document.getElementById('rfq_deadline').value,
+                notes: document.getElementById('rfq_notes').value,
+                items: items,
+                vendors: document.getElementById('vendor_list').value.split(',').map(v => v.trim())
+            };
+
+            fetch('../backend/create_rfq.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+             if (data.status === "error") {
+        alert(data.message);
+        return;
+    }
+                if(data.status === 'success') {
+                    alert('RFQ Created Successfully!');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

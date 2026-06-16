@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require_once 'db1.php';
+require_once 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);

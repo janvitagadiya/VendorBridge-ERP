@@ -1,51 +1,65 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+require_once 'db.php';
 header("Content-Type: application/json");
-require_once 'db1.php';
-
-$method = $_SERVER['REQUEST_METHOD'];
-
-if ($method === 'GET') {
-    $sql = "SELECT id, rfq_no, title, deadline, status FROM rfqs ORDER BY id DESC";
-    $result = $conn->query($sql);
-    
-    $rfqs = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $rfqs[] = $row;
-        }
-    }
-    echo json_encode($rfqs);
+if ($_SESSION['role_id'] != 2) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Access Denied"
+    ]);
     exit;
 }
+
+
+$method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
     
-    if (!isset($data['rfq_no']) || !isset($data['title']) || !isset($data['deadline'])) {
-        echo json_encode(["status" => "error", "message" => "Missing required RFQ fields"]);
+    // Validate required header fields
+    if (!isset($data['rfq_no'], $data['title'], $data['deadline'])) {
+        echo json_encode(["status" => "error", "message" => "Missing required fields"]);
         exit;
     }
     
-    $rfq_no = $conn->real_escape_string($data['rfq_no']);
-    $title = $conn->real_escape_string($data['title']);
-    $deadline = $conn->real_escape_string($data['deadline']);
-    $notes = isset($data['notes']) ? $conn->real_escape_string($data['notes']) : '';
     
-    // Assign created_by using the logged-in session ID, or fallback to 1 if testing without login
-    $created_by = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 1;
+    $created_by = $_SESSION['user_id'] ?? 1;
     
-    // Maps seamlessly to your table setup: default status value is set to 'draft'
-    $sql = "INSERT INTO rfqs (rfq_no, title, created_by, deadline, status, notes) 
-            VALUES ('$rfq_no', '$title', $created_by, '$deadline', 'draft', '$notes')";
-    
-    if ($conn->query($sql)) {
-        echo json_encode(["status" => "success", "message" => "RFQ record created successfully"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Could not write to database: " . $conn->error]);
+    try {
+        $pdo->beginTransaction();
+        
+        // 1. Insert RFQ Header
+        $sql = "INSERT INTO rfqs (rfq_no, title, created_by, deadline, status, notes) VALUES (?, ?, ?, ?, 'draft', ?)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$data['rfq_no'], $data['title'], $created_by, $data['deadline'], $data['notes'] ?? '']);
+        $rfq_id = $pdo->lastInsertId();
+        
+        // 2. Insert Line Items
+        if (!empty($data['items'])) {
+            $itemSql = "INSERT INTO rfq_items (rfq_id, item_name, quantity, unit) VALUES (?, ?, ?, ?)";
+            $itemStmt = $pdo->prepare($itemSql);
+            foreach ($data['items'] as $item) {
+                $itemStmt->execute([$rfq_id, $item['item_name'], $item['quantity'], $item['unit']]);
+            }
+        }
+        
+        // 3. Insert Vendor Assignments
+        if (!empty($data['vendors'])) {
+            $vendSql = "INSERT INTO rfq_vendor_assignments (rfq_id, vendor_id, invitation_status) VALUES (?, ?, 'pending')";
+            $vendStmt = $pdo->prepare($vendSql);
+            foreach ($data['vendors'] as $vendor_id) {
+                $vendStmt->execute([$rfq_id, $vendor_id]);
+            }
+        }
+        
+        $pdo->commit();
+        echo json_encode(["status" => "success", "message" => "RFQ created successfully"]);
+        
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }
     exit;
 }
-
-$conn->close();
 ?>

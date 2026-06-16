@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Proposal - VendorBridge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="w-64 min-h-screen p-6 border-r border-white/10 flex flex-col justify-between fixed left-0 top-0 h-full bg-[#050505]">
+        <div>
+            <h1 class="text-2xl font-black mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wide">VENDORBRIDGE</h1>
+          <nav class="space-y-2">
+    <a href="index.html" id="nav-dashboard" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Dashboard</a>
+    <a href="vendors.html" id="nav-vendors" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Vendors Matrix</a>
+    
+    <div class="mt-6">
+        <p class="px-4 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">RFQ's</p>
+        <a href="create_rfq.html" id="nav-create" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Create New</a>
+       
+    </div>
+
+    <a href="submit_quotation.html" id="nav-submit" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Submit Quotation</a>
+    <a href="../backend/comparison.php"
+   id="nav-comparison"
+   class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">
+   Compare Quotations
+</a>
+    <a href="../backend/approvals.php" id="nav-approvals" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Manager Approvals</a>
+    <a href="../backend/purchase_orders.php"
+   id="nav-po"
+   class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">
+   Purchase Orders
+</a>
+    <a href="invoices.html" id="nav-invoices" class="nav-link block py-3 px-4 rounded-xl text-slate-400 hover:text-white transition font-semibold">Invoice Ledger</a>
+</nav>
+        </div>
+        <a href="login.html" class="block py-3 px-4 rounded-xl text-red-400 hover:bg-red-900/20 border border-red-900/50 transition text-center text-sm font-bold">Logout</a>
+    </aside>
+
+
+    <main class="flex-1 pl-72 p-10">
+        <div class="max-w-xl mx-auto glass-card p-8 rounded-3xl">
+            <h2 class="text-2xl font-black mb-6">Submit Proposal</h2>
+            <p id="rfq-info" class="text-slate-400 mb-8 italic border-b border-white/10 pb-4">Select an RFQ to view deadline...</p>
+            
+            <form id="submissionForm" class="space-y-6">
+                <input type="hidden" id="rfq_id">
+                <input type="hidden" id="rfq_item_id">
+                
+                <div>
+                    <label class="block text-slate-400 text-sm mb-2">Select RFQ</label>
+                    <select id="q-rfq-id" onchange="loadRFQDetails(this.value)" class="w-full bg-black border border-white/10 p-4 rounded-xl text-white">
+                        <option value="">-- Choose an RFQ --</option>
+                    </select>
+                </div>
+<div>
+    <label class="block text-slate-400 text-sm mb-1">Vendor</label>
+    <select id="vendor_id"
+        class="w-full bg-black border border-white/10 p-3 rounded-xl">
+        <option value="4">Vendor 4</option>
+        <option value="5">Vendor 5</option>
+        <option value="6">Vendor 6</option>
+    </select>
+</div>
+                <div class="space-y-4 border-t border-white/10 pt-6">
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-1">Quantity</label>
+                        <input type="number" id="q-quantity" class="w-full bg-black border border-white/10 p-3 rounded-xl" placeholder="Enter quantity" required>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-1">Price (₹)</label>
+                        <input type="number" id="q-amount" class="w-full bg-black border border-white/10 p-3 rounded-xl" placeholder="Enter unit price" required>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-1">Expected Delivery Date</label>
+                        <input type="date" id="q-delivery-date" class="w-full bg-black border border-white/10 p-3 rounded-xl" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-blue-600 rounded-xl font-bold hover:bg-blue-500 transition">Submit Proposal for Approval</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        async function loadRFQs() {
+            try {
+                const res = await fetch('../backend/get_rfqs.php');
+                const rfqs = await res.json();
+                const dropdown = document.getElementById('q-rfq-id');
+                rfqs.forEach(rfq => {
+                    dropdown.innerHTML += `<option value="${rfq.id}">${rfq.rfq_no} - ${rfq.title}</option>`;
+                });
+            } catch (err) { console.error("Error loading RFQs:", err); }
+        }
+
+        async function loadRFQDetails(rfqId) {
+    if (!rfqId) return;
+    try {
+        const res = await fetch(`../backend/get_rfq.php?id=${rfqId}`);
+        const data = await res.json();
+        
+        document.getElementById('rfq_id').value = data.id;
+        document.getElementById('rfq-info').innerText = `Deadline: ${data.deadline}`;
+        
+        // IMPORTANT: Store the item ID in a hidden field or dataset
+        // Assuming your backend sends an 'items' array
+        if (data.items && data.items.length > 0) {
+            document.getElementById('rfq_item_id').value = data.items[0].id;
+        }
+    } catch (err) { console.error("Error loading RFQ details:", err); }
+}
+document.getElementById('submissionForm').addEventListener('submit', async function(e) {
+
+    e.preventDefault();
+
+   const payload = {
+    rfq_id: document.getElementById('rfq_id').value,
+    rfq_item_id: document.getElementById('rfq_item_id').value,
+    vendor_id: document.getElementById('vendor_id').value,
+    quantity: document.getElementById('q-quantity').value,
+    grand_total: document.getElementById('q-amount').value,
+    delivery_timeline: document.getElementById('q-delivery-date').value
+};
+
+    console.log(payload);
+
+    try {
+
+        const response = await fetch('../backend/submit_quotation.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        alert(result.message);
+
+        if(result.status === "success"){
+            document.getElementById('submissionForm').reset();
+        }
+
+    } catch(error) {
+        console.error(error);
+        alert("Submission failed");
+    }
+
+});
+
+        window.onload = loadRFQs;
+    </script>
+     <script>
+    // Get the current page filename
+    const path = window.location.pathname.split("/").pop(); 
+
+    // Mapping of filename to element ID
+    const navMap = {
+        'index.html': 'nav-dashboard',
+        'vendors.html': 'nav-vendors',
+        'create_rfq.html': 'nav-create',
+        'rfq_list.html': 'nav-list',
+        'submit_quotation.html': 'nav-submit',
+        'approvals.html': 'nav-approvals',
+        'invoices.html': 'nav-invoices'
+    };
+
+    // Apply active class to the current page link
+    if (navMap[path]) {
+        const activeEl = document.getElementById(navMap[path]);
+        activeEl.classList.add('bg-blue-600/20', 'text-blue-400', 'border', 'border-blue-500/50');
+        activeEl.classList.remove('text-slate-400');
+    }
+</script>
+</body>
+</html>

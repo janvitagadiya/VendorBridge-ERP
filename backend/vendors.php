@@ -1,45 +1,79 @@
 <?php
-header("Content-Type: application/json");
-require_once 'db1.php';
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    die("Login Required");
+}
+
+if ($_SESSION['role_id'] != 4) {
+    die("Access Denied");
+}
+?>
+<?php
+
+
+require_once 'db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    $sql = "SELECT id, company_name, contact_person, email, category FROM vendors ORDER BY id DESC";
-    $result = $conn->query($sql);
-    
-    $vendors = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $vendors[] = $row;
-        }
-    }
+
+    $sql = "SELECT id, company_name, contact_person, email, category
+            FROM vendors
+            ORDER BY id DESC";
+
+    $stmt = $pdo->query($sql);
+
+    $vendors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     echo json_encode($vendors);
     exit;
 }
 
 if ($method === 'POST') {
+
     $data = json_decode(file_get_contents("php://input"), true);
-    
-    if (!isset($data['company_name']) || !isset($data['contact_person']) || !isset($data['email'])) {
-        echo json_encode(["status" => "error", "message" => "Missing required fields"]);
+
+    if (
+        !isset($data['company_name']) ||
+        !isset($data['contact_person']) ||
+        !isset($data['email'])
+    ) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing required fields"
+        ]);
         exit;
     }
-    
-    $company_name = $conn->real_escape_string($data['company_name']);
-    $contact_person = $conn->real_escape_string($data['contact_person']);
-    $email = $conn->real_escape_string($data['email']);
-    $category = isset($data['category']) ? $conn->real_escape_string($data['category']) : 'Supplier';
-    
-    $sql = "INSERT INTO vendors (company_name, contact_person, email, category) VALUES ('$company_name', '$contact_person', '$email', '$category')";
-    
-    if ($conn->query($sql)) {
-        echo json_encode(["status" => "success", "message" => "Vendor successfully logged"]);
+
+    $sql = "INSERT INTO vendors
+            (company_name, contact_person, email, category)
+            VALUES (?, ?, ?, ?)";
+
+    $stmt = $pdo->prepare($sql);
+
+    $category = $data['category'] ?? 'Supplier';
+
+    if ($stmt->execute([
+        $data['company_name'],
+        $data['contact_person'],
+        $data['email'],
+        $category
+    ])) {
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Vendor added successfully"
+        ]);
+
     } else {
-        echo json_encode(["status" => "error", "message" => "Database error: " . $conn->error]);
+
+        echo json_encode([
+            "status" => "error",
+            "message" => "Database error"
+        ]);
     }
+
     exit;
 }
-
-$conn->close();
 ?>

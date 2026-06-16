@@ -165,17 +165,9 @@ CREATE TABLE `rfqs` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `rfqs`
---
 
-INSERT INTO `rfqs` (`id`, `rfq_no`, `title`, `created_by`, `deadline`, `status`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 'RFQ-001', 'Office Chairs for New Branch', 2, '2026-06-20', 'sent', 'Need durable ergonomic chairs', '2026-06-06 04:12:43', '2026-06-06 04:12:43'),
-(2, 'RFQ-002', 'Laptop Procurement', 2, '2026-06-25', 'draft', 'For new employees', '2026-06-06 04:12:43', '2026-06-06 04:12:43');
 
--- --------------------------------------------------------
 
---
 -- Table structure for table `rfq_items`
 --
 
@@ -190,18 +182,7 @@ CREATE TABLE `rfq_items` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `rfq_items`
---
 
-INSERT INTO `rfq_items` (`id`, `rfq_id`, `item_name`, `description`, `quantity`, `unit`, `estimated_price`, `created_at`) VALUES
-(1, 1, 'Ergonomic Chair', 'Mesh back office chair', 20.00, 'pcs', 4500.00, '2026-06-06 04:13:03'),
-(2, 1, 'Executive Chair', 'Leather executive chair', 5.00, 'pcs', 8500.00, '2026-06-06 04:13:03'),
-(3, 2, 'Business Laptop', 'i5, 16GB RAM, 512GB SSD', 10.00, 'pcs', 55000.00, '2026-06-06 04:13:03');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `rfq_vendor_assignments`
 --
 
@@ -227,19 +208,9 @@ CREATE TABLE `roles` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `roles`
---
 
-INSERT INTO `roles` (`id`, `name`, `description`, `created_at`) VALUES
-(1, 'admin', 'System administrator', '2026-06-06 04:11:23'),
-(2, 'procurement_officer', 'Creates RFQs and manages procurement', '2026-06-06 04:11:23'),
-(3, 'manager', 'Approves or rejects quotations', '2026-06-06 04:11:23'),
-(4, 'vendor', 'Submits quotations for RFQs', '2026-06-06 04:11:23');
 
--- --------------------------------------------------------
 
---
 -- Table structure for table `users`
 --
 
@@ -255,16 +226,6 @@ CREATE TABLE `users` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `role_id`, `name`, `email`, `password_hash`, `phone`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Admin User', 'admin@vendorbridge.com', 'hashed_password_1', '9999999999', 'active', '2026-06-06 04:11:57', '2026-06-06 04:11:57'),
-(2, 2, 'Aarav Patel', 'aarav@vendorbridge.com', 'hashed_password_2', '9876543210', 'active', '2026-06-06 04:11:57', '2026-06-06 04:11:57'),
-(3, 3, 'Neha Shah', 'neha@vendorbridge.com', 'hashed_password_3', '9898989898', 'active', '2026-06-06 04:11:57', '2026-06-06 04:11:57');
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `vendors`
@@ -285,15 +246,7 @@ CREATE TABLE `vendors` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `vendors`
---
-
-INSERT INTO `vendors` (`id`, `company_name`, `contact_person`, `email`, `phone`, `gst_no`, `category`, `address`, `status`, `rating`, `created_at`, `updated_at`) VALUES
-(1, 'Alpha Enterprises', 'Rahul Mehta', 'alpha@gmail.com', '9123456780', '24ABCDE1234F1Z5', 'Office Supplies', 'Surat, Gujarat', 'active', 4.50, '2026-06-06 04:12:18', '2026-06-06 04:12:18'),
-(2, 'Bright Tech Solutions', 'Priya Shah', 'brighttech@gmail.com', '9234567890', '24XYZAB5678K1Z2', 'IT Services', 'Ahmedabad, Gujarat', 'active', 4.80, '2026-06-06 04:12:18', '2026-06-06 04:12:18');
-
---
+-
 -- Indexes for dumped tables
 --
 

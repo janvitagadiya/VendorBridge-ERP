@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require_once 'db1.php';
+require_once 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Left Join queries to dynamically fetch company metadata text strings 
